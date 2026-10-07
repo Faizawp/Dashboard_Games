@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOASH EDU GAME CENTER</title>
+    
+    <!-- Google Fonts: Poppins for headings, Inter for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config for Custom Gaming Colors & Fonts -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',    // Slate 900
+                            card: '#1e293b',    // Slate 800
+                            primary: '#6366f1', // Indigo 500
+                            secondary: '#ec4899',// Pink 500
+                            accent: '#10b981',  // Emerald 500
+                            xp: '#f59e0b'       // Amber 500
+                        }
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Scrollbar for horizontal categories */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Line clamp for description */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-primary selection:text-white flex h-screen overflow-hidden">
+
+    <!-- OVERLAY LOADING GLOBAL -->
+    <div id="globalLoader" class="fixed inset-0 z-[200] bg-brand-dark/90 backdrop-blur-sm flex-col items-center justify-center hidden">
+        <div class="relative w-20 h-20">
+            <div class="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-brand-primary rounded-full border-t-transparent animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <i data-lucide="gamepad-2" class="w-8 h-8 text-brand-secondary animate-pulse"></i>
+            </div>
+        </div>
+        <p class="text-gray-300 font-heading font-medium mt-4 tracking-widest text-sm animate-pulse">SINKRONISASI DATA...</p>
+    </div>
+
+    <!-- CUSTOM CONFIRM MODAL (Pengganti alert/confirm browser) -->
+    <div id="confirmModal" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+        <div class="bg-brand-card p-6 rounded-2xl border border-red-500/30 max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="confirmModalContent">
+            <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-heading font-bold text-white mb-2" id="confirmTitle">Hapus Data?</h3>
+            <p class="text-sm text-gray-400 mb-6" id="confirmMessage">Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeConfirmModal()" class="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 text-white font-medium rounded-xl transition-colors w-1/2 border border-gray-700">Batal</button>
+                <button id="confirmActionBtn" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-colors shadow-lg shadow-red-500/20 w-1/2">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <aside class="hidden md:flex flex-col w-64 h-full bg-brand-card border-r border-gray-700 p-5 flex-shrink-0 relative z-20">
+        <div class="flex items-center gap-3 mb-10">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center shadow-lg">
+                <i data-lucide="gamepad-2" class="text-white w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-heading font-bold text-lg leading-tight tracking-wide">BOASH</h1>
+                <p class="text-[10px] text-gray-400 font-semibold tracking-widest">EDU GAME CENTER</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 space-y-2" id="sidebarNav">
+            <a href="#" onclick="switchView('student')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl bg-brand-primary/10 text-brand-primary font-medium transition-all" data-target="student">
+                <i data-lucide="home" class="w-5 h-5"></i> Home
+            </a>
+            <a href="#" onclick="switchView('learningworld')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="learningworld">
+                <i data-lucide="globe" class="w-5 h-5"></i> Learning World
+            </a>
+            <a href="#" onclick="switchView('student')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="games">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i> Semua Game
+            </a>
+            <a href="#" onclick="switchView('favorites')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="favorites">
+                <i data-lucide="star" class="w-5 h-5"></i> Favorit
+            </a>
+            <a href="#" onclick="switchView('leaderboard')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="leaderboard">
+                <i data-lucide="trophy" class="w-5 h-5"></i> Leaderboard
+            </a>
+            <a href="#" onclick="switchView('progress')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="progress">
+                <i data-lucide="bar-chart" class="w-5 h-5"></i> Progress Saya
+            </a>
+            <a href="#" onclick="switchView('achievement')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all" data-target="achievement">
+                <i data-lucide="medal" class="w-5 h-5"></i> Achievement
+            </a>
+        </nav>
+
+        <div class="mt-auto pt-4 border-t border-gray-700">
+            <a href="#" onclick="switchView('admin')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-brand-xp hover:bg-brand-xp/10 transition-all font-medium">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i> Admin Panel
+            </a>
+            <a href="#" onclick="switchView('settings')" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all mt-2" data-target="settings">
+                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full overflow-y-auto relative pb-20 md:pb-0">
+        
+        <!-- Header Sticky -->
+        <header class="sticky top-0 z-30 glass px-6 py-4 flex items-center justify-between gap-4">
+            <div class="md:hidden flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
+                    <i data-lucide="gamepad-2" class="text-white w-5 h-5"></i>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                <input type="text" id="searchInput" placeholder="Cari game, materi, atau kategori..." 
+                    class="w-full bg-brand-dark border border-gray-700 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+            </div>
+
+            <!-- User Profile (Mock) -->
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="switchView('progress')">
+                <div class="hidden sm:block text-right">
+                    <p id="headerStudentName" class="text-sm font-semibold text-white group-hover:text-brand-primary transition-colors">Ahmad Siswa</p>
+                    <p id="headerStudentLevel" class="text-xs text-brand-xp font-medium">Lv. 1 • 0 XP</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gray-700 border-2 border-brand-primary overflow-hidden shadow-lg">
+                    <img id="headerStudentAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" alt="Profile" class="w-full h-full object-cover bg-white">
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Padding Container (Student View) -->
+        <div id="studentView" class="p-6 max-w-7xl mx-auto space-y-8">
+
+            <!-- Hero Section -->
+            <section class="relative rounded-3xl overflow-hidden bg-gradient-to-r from-brand-primary via-indigo-600 to-brand-secondary p-8 sm:p-12 shadow-2xl">
+                <!-- Abstract Background Shapes -->
+                <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-black opacity-20 blur-3xl"></div>
+                
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 text-xs font-semibold mb-4">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        Baru di Boash Edu Center
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-white mb-4 leading-tight">
+                        Belajar Lebih Seru Melalui Permainan Interaktif.
+                    </h2>
+                    <p class="text-indigo-100 text-sm sm:text-base mb-8 max-w-lg">
+                        Learn • Play • Challenge • Achieve. Kumpulkan XP, buka achievement, dan jadilah yang terbaik di Leaderboard!
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="document.getElementById('searchInput').focus()" class="px-6 py-3 bg-white text-brand-primary font-bold rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                            <i data-lucide="rocket" class="w-5 h-5"></i> Jelajahi Game
+                        </button>
+                        <button onclick="openModal(mockDailyChallenge.gameId)" class="px-6 py-3 bg-brand-dark/30 hover:bg-brand-dark/50 text-white backdrop-blur-md border border-white/20 font-bold rounded-xl transition-all flex items-center gap-2">
+                            <i data-lucide="zap" class="w-5 h-5 text-yellow-300"></i> Daily Challenge
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Decorative Icon for Desktop -->
+                <div class="hidden lg:block absolute right-12 top-1/2 -translate-y-1/2 animate-float">
+                    <i data-lucide="gamepad-2" class="w-48 h-48 text-white opacity-20 transform rotate-12"></i>
+                </div>
+            </section>
+
+            <!-- Game of the Week Section -->
+            <section id="gameOfTheWeekSection" class="hidden relative rounded-3xl overflow-hidden border border-brand-primary/30 shadow-2xl group cursor-pointer transition-transform hover:-translate-y-1">
+                <div class="absolute inset-0 bg-gray-900">
+                    <img id="gotwCover" src="" alt="Game of the week" class="w-full h-full object-cover opacity-30 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-r from-brand-card via-brand-card/90 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent"></div>
+                </div>
+                
+                <div class="relative z-10 p-8 sm:p-12 flex flex-col justify-center min-h-[320px] max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/50 text-xs font-bold text-orange-400 mb-4 w-max shadow-lg">
+                        <i data-lucide="flame" class="w-4 h-4 fill-current"></i> GAME OF THE WEEK
+                    </div>
+                    <h3 id="gotwTitle" class="text-3xl sm:text-5xl font-heading font-bold text-white mb-3 leading-tight group-hover:text-brand-primary transition-colors">Game Title</h3>
+                    <p id="gotwDesc" class="text-gray-300 text-sm sm:text-base mb-6 line-clamp-2 max-w-md">Game description here.</p>
+                    
+                    <div class="flex items-center flex-wrap gap-3 mb-8 text-xs font-semibold text-gray-400">
+                        <span id="gotwCategory" class="px-2 py-1 bg-gray-800 rounded-md border border-gray-700 backdrop-blur-sm">Category</span>
+                        <span id="gotwClass" class="px-2 py-1 bg-gray-800 rounded-md border border-gray-700 backdrop-blur-sm">Kelas</span>
+                        <span id="gotwDiff" class="px-2 py-1 bg-gray-800 rounded-md border border-gray-700 backdrop-blur-sm">Difficulty</span>
+                        <span class="flex items-center gap-1 text-brand-xp px-2 py-1 bg-gray-800 rounded-md border border-gray-700 backdrop-blur-sm"><i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> <span id="gotwXP">XP</span></span>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button id="gotwPlayBtn" class="px-6 sm:px-8 py-3 bg-brand-primary hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-brand-primary/30 transition-all flex items-center gap-2 relative z-20">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i> MAIN SEKARANG
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Challenge Section -->
+            <section id="dailyChallengeSection" class="hidden relative rounded-3xl overflow-hidden bg-gradient-to-r from-orange-500 to-brand-xp p-6 sm:p-8 shadow-xl">
+                <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div>
+                        <div class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/20 text-xs font-bold text-white mb-3">
+                            <i data-lucide="zap" class="w-3 h-3 fill-current text-yellow-300"></i> CHALLENGE HARI INI
+                        </div>
+                        <h3 id="dcTitle" class="text-2xl sm:text-3xl font-heading font-bold text-white mb-2 leading-tight">Challenge</h3>
+                        <p id="dcDesc" class="text-orange-50 text-sm max-w-lg">Deskripsi challenge harian.</p>
+                    </div>
+                    <div class="flex flex-col items-center shrink-0 bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20">
+                        <span class="text-sm text-orange-100 font-medium mb-1">Reward Bonus</span>
+                        <span id="dcReward" class="text-2xl font-bold text-white mb-3">+150 XP</span>
+                        <button id="dcPlayBtn" class="px-6 py-2.5 bg-white text-orange-600 hover:bg-orange-50 font-bold rounded-xl shadow-lg hover:scale-105 transition-all flex items-center gap-2">
+                            Mulai Challenge
+                        </button>
+                    </div>
+                </div>
+                <i data-lucide="target" class="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 text-white opacity-10 transform -rotate-12 pointer-events-none hidden md:block"></i>
+            </section>
+
+            <!-- Continue Playing Section -->
+            <section id="continuePlayingSection" class="hidden space-y-4">
+                <h3 class="font-heading font-bold text-xl flex items-center gap-2">
+                    <i data-lucide="play-circle" class="w-5 h-5 text-brand-primary"></i> Lanjutkan Permainan
+                </h3>
+                <div id="continuePlayingGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Injected by JS -->
+                </div>
+            </section>
+
+            <!-- Controls (Categories & Filters) -->
+            <section class="space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h3 class="font-heading font-bold text-xl flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-brand-accent"></i> Pilihan Game
+                    </h3>
+                    
+                    <!-- Dropdown Filters -->
+                    <div class="flex gap-2">
+                        <select id="classFilter" class="bg-brand-card border border-gray-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary text-gray-300">
+                            <option value="All">Semua Kelas</option>
+                            <option value="7">Kelas 7</option>
+                            <option value="8">Kelas 8</option>
+                            <option value="9">Kelas 9</option>
+                        </select>
+                        <select id="difficultyFilter" class="bg-brand-card border border-gray-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary text-gray-300">
+                            <option value="All">Semua Kesulitan</option>
+                            <option value="Easy">Mudah</option>
+                            <option value="Medium">Sedang</option>
+                            <option value="Hard">Sulit</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Category Pills (Horizontal Scroll) -->
+                <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2" id="categoryContainer">
+                    <!-- Injected by JS -->
+                </div>
+            </section>
+
+            <!-- Game Grid -->
+            <section>
+                <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Cards Injected by JS -->
+                </div>
+                
+                <!-- Empty State (Hidden by default) -->
+                <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center">
+                    <div class="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                        <i data-lucide="ghost" class="w-10 h-10 text-gray-500"></i>
+                    </div>
+                    <h3 class="font-heading font-bold text-lg mb-2">Game Tidak Ditemukan</h3>
+                    <p class="text-sm text-gray-400">Coba ubah kata kunci atau filter pencarian kamu.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Admin View Container -->
+        <div id="adminView" class="hidden p-6 max-w-7xl mx-auto space-y-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-brand-card p-6 rounded-2xl border border-gray-700 shadow-lg">
+                <div>
+                    <h2 class="text-2xl font-heading font-bold text-white">Game Management</h2>
+                    <p class="text-sm text-gray-400 mt-1">Kelola daftar game edukasi yang tersedia untuk siswa.</p>
+                </div>
+                <button onclick="openAdminModal()" class="px-5 py-2.5 bg-brand-primary hover:bg-indigo-500 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                    <i data-lucide="plus" class="w-5 h-5"></i> Tambah Game
+                </button>
+            </div>
+
+            <!-- Admin Table -->
+            <div class="bg-brand-card rounded-2xl border border-gray-700 overflow-hidden shadow-lg overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="bg-gray-800/50 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                            <th class="p-4 font-medium">ID</th>
+                            <th class="p-4 font-medium">Game</th>
+                            <th class="p-4 font-medium">Kategori</th>
+                            <th class="p-4 font-medium">Info</th>
+                            <th class="p-4 font-medium text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody" class="divide-y divide-gray-700">
+                        <!-- Admin rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button onclick="switchView('student')" class="mt-4 px-6 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2 w-full sm:w-auto justify-center">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Tampilan Siswa
+            </button>
+        </div>
+
+        <!-- Progress View Container -->
+        <div id="progressView" class="hidden p-6 max-w-7xl mx-auto space-y-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 bg-brand-card p-8 rounded-2xl border border-gray-700 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-brand-primary opacity-5 blur-3xl rounded-full"></div>
+                
+                <div class="w-24 h-24 rounded-full bg-gray-700 border-4 border-brand-primary overflow-hidden shrink-0 shadow-xl shadow-brand-primary/20 z-10 bg-white">
+                    <img id="progressAvatar" src="" alt="Profile" class="w-full h-full object-cover">
+                </div>
+                <div class="z-10">
+                    <h2 id="progressName" class="text-3xl font-heading font-bold text-white mb-1">Nama Siswa</h2>
+                    <p class="text-gray-400 mb-3">Siswa Kelas <span id="progressClass"></span></p>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-brand-primary/20 text-brand-primary border border-brand-primary/30 rounded-lg text-sm font-bold shadow-inner">
+                            Level <span id="progressLevelNum"></span>
+                        </span>
+                        <span class="text-brand-xp font-bold text-sm flex items-center gap-1">
+                            <i data-lucide="star" class="w-4 h-4 fill-current"></i> <span id="progressTotalXP"></span> XP
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="font-heading font-bold text-xl text-white">Statistik Pembelajaran</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-brand-card p-6 rounded-2xl border border-gray-700 flex flex-col items-center justify-center text-center shadow-lg">
+                    <i data-lucide="gamepad-2" class="w-8 h-8 text-blue-400 mb-2"></i>
+                    <div id="statGamesPlayed" class="text-3xl font-bold text-white mb-1">0</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Game Dimainkan</div>
+                </div>
+                <div class="bg-brand-card p-6 rounded-2xl border border-gray-700 flex flex-col items-center justify-center text-center shadow-lg">
+                    <i data-lucide="check-circle" class="w-8 h-8 text-green-400 mb-2"></i>
+                    <div id="statGamesCompleted" class="text-3xl font-bold text-white mb-1">0</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Game Selesai</div>
+                </div>
+                <div class="bg-brand-card p-6 rounded-2xl border border-gray-700 flex flex-col items-center justify-center text-center shadow-lg">
+                    <i data-lucide="award" class="w-8 h-8 text-purple-400 mb-2"></i>
+                    <div id="statAchievements" class="text-3xl font-bold text-white mb-1">0</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider">Achievement</div>
+                </div>
+            </div>
+
+            <!-- Advanced Analytics: Category Progress -->
+            <div class="bg-brand-card p-6 sm:p-8 rounded-2xl border border-gray-700 shadow-lg mt-8">
+                <h3 class="font-heading font-bold text-xl text-white mb-6 flex items-center gap-2">
+                    <i data-lucide="pie-chart" class="w-5 h-5 text-brand-secondary"></i> Analisis Penguasaan Materi
+                </h3>
+                <div id="categoryAnalytics" class="space-y-5">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
+            <!-- Weekly Stats -->
+            <div class="bg-brand-card p-6 sm:p-8 rounded-2xl border border-gray-700 shadow-lg mt-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-heading font-bold text-xl text-white flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-5 h-5 text-blue-400"></i> Aktivitas 7 Hari Terakhir
+                    </h3>
+                    <span class="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded border border-gray-700">Minggu Ini</span>
+                </div>
+                <div class="flex items-end justify-between h-40 gap-2 mt-4 px-1 sm:px-4" id="weeklyChart">
+                    <!-- Injected by JS -->
+                </div>
+                <div class="flex justify-between text-[10px] text-gray-500 mt-2 px-1 sm:px-4" id="weeklyLabels">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites View Container -->
+        <div id="favoritesView" class="hidden p-6 max-w-7xl mx-auto space-y-6">
+            <h2 class="text-2xl sm:text-3xl font-heading font-bold flex items-center gap-3 text-white">
+                <i data-lucide="heart" class="text-brand-secondary fill-brand-secondary w-8 h-8"></i> Game Favorit Saya
+            </h2>
+            <div id="favoritesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Injected by JS -->
+            </div>
+            <!-- Empty State -->
+            <div id="emptyFavorites" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="heart-crack" class="w-10 h-10 text-gray-500"></i>
+                </div>
+                <h3 class="font-heading font-bold text-lg mb-2">Belum ada favorit</h3>
+                <p class="text-sm text-gray-400">Tambahkan game ke favoritmu dengan menekan ikon hati.</p>
+            </div>
+        </div>
+
+        <!-- Leaderboard View Container -->
+        <div id="leaderboardView" class="hidden p-6 max-w-7xl mx-auto space-y-8">
+            <div class="text-center space-y-2 mb-8">
+                <h2 class="text-3xl sm:text-4xl font-heading font-bold text-white flex items-center justify-center gap-3">
+                    <i data-lucide="trophy" class="text-yellow-400 w-8 h-8"></i> Top Players
+                </h2>
+                <p class="text-gray-400">Peringkat berdasarkan perolehan XP tertinggi.</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-brand-card rounded-2xl border border-gray-700 shadow-xl overflow-hidden">
+                <!-- Current User Rank Banner -->
+                <div class="bg-gradient-to-r from-brand-primary to-indigo-600 p-4 sm:p-6 flex items-center justify-between border-b border-gray-700">
+                    <div class="flex items-center gap-4">
+                        <div id="myRankBadge" class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center font-bold text-xl text-white backdrop-blur-sm border border-white/30">
+                            #?
+                        </div>
+                        <div>
+                            <div class="text-sm text-indigo-200 font-semibold uppercase tracking-wider mb-0.5">Peringkat Kamu</div>
+                            <div id="myRankName" class="font-bold text-white text-lg">Nama Siswa</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div id="myRankXP" class="text-2xl font-bold text-yellow-300">0 XP</div>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-gray-800/50 text-gray-400 text-xs uppercase tracking-wider border-b border-gray-700">
+                                <th class="p-4 font-medium w-20 text-center">Rank</th>
+                                <th class="p-4 font-medium">Siswa</th>
+                                <th class="p-4 font-medium">Kelas</th>
+                                <th class="p-4 font-medium text-right">Total XP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody" class="divide-y divide-gray-700/50">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement View Container -->
+        <div id="achievementView" class="hidden p-6 max-w-7xl mx-auto space-y-8">
+            <h2 class="text-2xl sm:text-3xl font-heading font-bold flex items-center gap-3 text-white">
+                <i data-lucide="medal" class="text-brand-xp w-8 h-8"></i> Koleksi Achievement
+            </h2>
+            <div id="achievementGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <!-- Learning World View Container -->
+        <div id="learningWorldView" class="hidden p-6 max-w-5xl mx-auto space-y-12 pb-24">
+            <div class="text-center space-y-3 mb-10">
+                <h2 class="text-3xl sm:text-4xl font-heading font-bold text-white flex items-center justify-center gap-3">
+                    <i data-lucide="globe" class="text-blue-400 w-8 h-8"></i> Learning World
+                </h2>
+                <p class="text-gray-400 max-w-xl mx-auto">Selesaikan stage di setiap dunia untuk membuka dunia berikutnya. Taklukkan semua tantangan dan jadilah master sejati!</p>
+            </div>
+            
+            <div id="worldsContainer" class="space-y-16 relative">
+                <!-- Connecting Line Base -->
+                <div class="absolute left-8 sm:left-1/2 top-4 bottom-4 w-1 bg-gray-800 -translate-x-1/2 z-0"></div>
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <!-- Settings View Container -->
+        <div id="settingsView" class="hidden p-6 max-w-4xl mx-auto space-y-8">
+            <h2 class="text-3xl font-heading font-bold text-white mb-6 flex items-center gap-3">
+                <i data-lucide="settings" class="text-gray-400 w-8 h-8"></i> Pengaturan Akun
+            </h2>
+
+            <div class="bg-brand-card rounded-2xl border border-gray-700 shadow-lg overflow-hidden divide-y divide-gray-700">
+                <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
+                    <div class="w-20 h-20 rounded-full bg-gray-700 border-2 border-brand-primary overflow-hidden shrink-0 bg-white">
+                        <img id="settingsAvatar" src="" alt="Profile" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                        <h3 class="text-xl font-bold text-white mb-1">Profil Siswa</h3>
+                        <p class="text-sm text-gray-400">Personalisasi identitas gaming edukasimu.</p>
+                    </div>
+                    <button class="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-medium rounded-xl transition-colors">
+                        Ubah Profil
+                    </button>
+                </div>
+
+                <div class="p-6 sm:p-8 space-y-6">
+                    <h3 class="text-lg font-bold text-white">Preferensi Sistem</h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-gray-200">Efek Suara (BGM & SFX)</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Aktifkan suara saat bermain atau navigasi.</div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-6 sm:p-8 bg-red-500/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <div class="font-medium text-red-400">Keluar dari Akun</div>
+                        <div class="text-xs text-red-400/70 mt-0.5">Progress kamu akan tetap aman saat login kembali.</div>
+                    </div>
+                    <button onclick="logout()" class="px-6 py-2.5 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 font-bold rounded-xl transition-all flex items-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full glass border-t border-gray-700 z-40 flex items-center justify-around py-3 px-2">
+        <a href="#" onclick="switchView('student')" class="flex flex-col items-center gap-1 text-brand-primary">
+            <i data-lucide="home" class="w-6 h-6"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </a>
+        <a href="#" onclick="switchView('learningworld')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+            <i data-lucide="globe" class="w-6 h-6"></i>
+            <span class="text-[10px] font-medium">World</span>
+        </a>
+        <a href="#" onclick="switchView('student')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors relative -top-4">
+            <div class="w-12 h-12 rounded-full bg-brand-primary shadow-lg shadow-brand-primary/50 flex items-center justify-center text-white">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <span class="text-[10px] font-medium">Main</span>
+        </a>
+        <a href="#" onclick="switchView('leaderboard')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+            <i data-lucide="trophy" class="w-6 h-6"></i>
+            <span class="text-[10px] font-medium">Rank</span>
+        </a>
+        <a href="#" onclick="switchView('progress')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white transition-colors">
+            <i data-lucide="user" class="w-6 h-6"></i>
+            <span class="text-[10px] font-medium">Profil</span>
+        </a>
+    </nav>
+
+    <!-- Game Detail Modal Overlay -->
+    <div id="gameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-brand-card w-full max-w-3xl rounded-2xl border border-gray-700 shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]" id="modalContent">
+            
+            <div class="relative h-48 sm:h-64 bg-gray-900 w-full shrink-0">
+                <img id="modalCover" src="" alt="Cover" class="w-full h-full object-cover opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-card to-transparent"></div>
+                <button onclick="closeModal()" class="absolute top-4 right-4 w-8 h-8 bg-black/50 hover:bg-black text-white rounded-full flex items-center justify-center backdrop-blur-md transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                
+                <div class="absolute bottom-4 left-6 flex items-end gap-4">
+                    <div class="w-20 h-20 rounded-xl bg-gray-800 border-2 border-gray-600 overflow-hidden shadow-lg hidden sm:block">
+                        <img id="modalThumb" src="" alt="Thumb" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <span id="modalCategory" class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary text-white mb-1 uppercase tracking-wider">Kategori</span>
+                        <h2 id="modalTitle" class="text-2xl sm:text-3xl font-heading font-bold text-white leading-tight">Nama Game</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 space-y-4">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-400 mb-1">Deskripsi</h4>
+                            <p id="modalDesc" class="text-sm text-gray-300 leading-relaxed">Deskripsi game akan muncul di sini.</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div class="bg-brand-dark p-3 rounded-xl border border-gray-700/50">
+                                <i data-lucide="graduation-cap" class="w-4 h-4 text-brand-primary mb-1"></i>
+                                <div class="text-[10px] text-gray-500 uppercase">Kelas</div>
+                                <div id="modalClass" class="text-sm font-semibold">8</div>
+                            </div>
+                            <div class="bg-brand-dark p-3 rounded-xl border border-gray-700/50">
+                                <i data-lucide="bar-chart-2" class="w-4 h-4 text-brand-secondary mb-1"></i>
+                                <div class="text-[10px] text-gray-500 uppercase">Tingkat</div>
+                                <div id="modalDiff" class="text-sm font-semibold">Medium</div>
+                            </div>
+                            <div class="bg-brand-dark p-3 rounded-xl border border-gray-700/50">
+                                <i data-lucide="star" class="w-4 h-4 text-brand-xp mb-1"></i>
+                                <div class="text-[10px] text-gray-500 uppercase">Reward</div>
+                                <div id="modalXP" class="text-sm font-semibold text-brand-xp">+100 XP</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button id="modalPlayBtn" class="w-full py-3 bg-brand-primary hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-5 h-5 fill-current"></i> Main Sekarang
+                        </button>
+                        <button id="modalFavBtn" class="w-full py-3 bg-brand-dark hover:bg-gray-800 border border-gray-700 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 group">
+                            <i id="modalFavIcon" data-lucide="heart" class="w-5 h-5 transition-colors"></i> <span id="modalFavText">Tambah Favorit</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Form Modal -->
+    <div id="adminFormModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-brand-card w-full max-w-2xl rounded-2xl border border-gray-700 shadow-2xl overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            
+            <div class="p-5 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+                <h3 id="adminModalTitle" class="font-heading font-bold text-xl text-white">Tambah Game Baru</h3>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-white transition-colors bg-gray-800 rounded-full p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto hide-scrollbar flex-1">
+                <form id="gameForm" onsubmit="handleSaveGame(event)" class="space-y-5">
+                    <input type="hidden" id="formGameId" value="">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="space-y-1.5 sm:col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Judul Game <span class="text-red-500">*</span></label>
+                            <input type="text" id="formTitle" required placeholder="Contoh: Petualangan Matematika" class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Kategori <span class="text-red-500">*</span></label>
+                            <input type="text" id="formCategory" required placeholder="Contoh: Flowchart" class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Reward XP <span class="text-red-500">*</span></label>
+                            <input type="number" id="formXP" required min="10" value="50" class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Kelas <span class="text-red-500">*</span></label>
+                            <select id="formClass" required class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                                <option value="7">Kelas 7</option>
+                                <option value="8">Kelas 8</option>
+                                <option value="9">Kelas 9</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tingkat Kesulitan <span class="text-red-500">*</span></label>
+                            <select id="formDiff" required class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5 sm:col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">URL Thumbnail (Gambar) <span class="text-red-500">*</span></label>
+                            <input type="url" id="formThumb" required placeholder="https://..." class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                        </div>
+                        <div class="space-y-1.5 sm:col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Deskripsi Singkat <span class="text-red-500">*</span></label>
+                            <textarea id="formDesc" required rows="3" placeholder="Jelaskan cara bermain dan tujuan game ini..." class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="p-5 border-t border-gray-700 bg-gray-900/30 flex justify-end gap-3">
+                <button type="button" onclick="closeAdminModal()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">Batal</button>
+                <button type="submit" form="gameForm" class="px-6 py-2.5 bg-brand-accent hover:bg-green-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-accent/20 transition-all flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Simpan Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="fixed inset-0 z-[100] bg-brand-dark flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-brand-primary/20 to-transparent pointer-events-none"></div>
+        
+        <div class="w-full max-w-md bg-brand-card p-8 rounded-3xl border border-gray-700 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-brand-primary opacity-20 blur-3xl rounded-full pointer-events-none"></div>
+            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-brand-secondary opacity-20 blur-3xl rounded-full pointer-events-none"></div>
+            
+            <div class="relative z-10 text-center mb-8">
+                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-brand-primary to-brand-secondary rounded-2xl flex items-center justify-center shadow-lg mb-4 transform -rotate-6">
+                    <i data-lucide="gamepad-2" class="w-8 h-8 text-white"></i>
+                </div>
+                <h2 class="font-heading font-bold text-2xl text-white tracking-wide">BOASH EDU GAME</h2>
+                <p class="text-gray-400 text-xs mt-2 uppercase tracking-widest font-semibold">Learn • Play • Challenge • Achieve</p>
+            </div>
+            
+            <form id="loginForm" class="relative z-10 space-y-5" onsubmit="handleLogin(event)">
+                <div class="space-y-1.5 text-left">
+                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Nama / NIS Siswa</label>
+                    <input type="text" id="loginName" required placeholder="Contoh: Ahmad Siswa" class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                </div>
+                <div class="space-y-1.5 text-left">
+                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Kelas</label>
+                    <select id="loginClass" class="w-full bg-brand-dark border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all">
+                        <option value="7">Kelas 7</option>
+                        <option value="8">Kelas 8</option>
+                        <option value="9">Kelas 9</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-3.5 bg-brand-primary hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-brand-primary/20 transition-transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 mt-4">
+                    <i data-lucide="log-in" class="w-5 h-5"></i> Mulai Petualangan
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // GITHUB PAGES / STATIC HOSTING BRIDGE 
+        // =========================================================================
+        
+        // PENTING: Ganti dengan URL Google Apps Script Web App Anda (diperoleh setelah deploy doPost di GAS)
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyh0LGjp_kpaTVjUWz1jXiahWSVVNdeL8nOqFGvDO7hcDP0kInfdLhacQWOP7GCOHR2Ew/exec'; 
+
+        // Fungsi pusat untuk mengirim data ke Google Apps Script via HTTP POST
+        function callBackend(functionName, args, callback) {
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('globalLoader').classList.add('flex');
+
+            if (!SCRIPT_URL || SCRIPT_URL === '') {
+                console.warn(`[Local Mode] SCRIPT_URL belum disetel. Simulasi API: ${functionName}`);
+                setTimeout(() => {
+                    document.getElementById('globalLoader').classList.add('hidden');
+                    document.getElementById('globalLoader').classList.remove('flex');
+                    if(callback) callback(null, false); 
+                }, 600); // Simulasi delay
+                return;
+            }
+
+            // Menggunakan fetch untuk menghindari masalah pada GitHub Pages
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 
+                    // Menggunakan text/plain untuk menghindari batasan CORS preflight request pada Apps Script
+                    'Content-Type': 'text/plain;charset=utf-8' 
+                },
+                body: JSON.stringify({ action: functionName, parameters: args })
+            })
+            .then(response => response.json())
+            .then(result => {
+                document.getElementById('globalLoader').classList.add('hidden');
+                document.getElementById('globalLoader').classList.remove('flex');
+                
+                if (result.status === 'success' || result.data !== undefined) {
+                     if(callback) callback(result.data || result, true);
+                } else {
+                     console.error("Backend API Error:", result);
+                     if(callback) callback(null, false);
+                }
+            })
+            .catch(error => {
+                console.error("Network / Fetch Error:", error);
+                document.getElementById('globalLoader').classList.add('hidden');
+                document.getElementById('globalLoader').classList.remove('flex');
+                
+                // Fallback otomatis jika internet mati atau SCRIPT_URL invalid
+                if(callback) callback(null, false);
+            });
+        }
+
+        let mockStudent = { id: 'S001', name: 'Ahmad Siswa', classLevel: '8', totalXP: 0, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest' };
+        let mockProgress = {};
+        let mockFavorites = new Set();
+        let categories = ['Semua'];
+
+        let mockGames = [
+            { id: 1, title: 'Flowchart Adventure', category: 'Flowchart', classLevel: '8', difficulty: 'Medium', xp: 100, desc: 'Susun flowchart untuk menyelesaikan berbagai masalah.', thumb: 'https://placehold.co/600x400/2a1b38/9f7aea?text=Flowchart' },
+            { id: 2, title: 'Algorithm Maze', category: 'Computational Thinking', classLevel: '7', difficulty: 'Easy', xp: 50, desc: 'Pandu robot keluar dari labirin.', thumb: 'https://placehold.co/600x400/1b382a/7ae99f?text=Algorithm' },
+            { id: 3, title: 'Hardware Challenge', category: 'Sistem Komputer', classLevel: '7', difficulty: 'Easy', xp: 75, desc: 'Rakitan dasar komponen komputer.', thumb: 'https://placehold.co/600x400/1b2438/7a9ce9?text=Hardware' }
+        ];
+
+        let mockDailyChallenge = {
+            gameId: 2, 
+            title: 'Algorithm Khusus',
+            desc: 'Selesaikan puzzle labirin ini hari ini untuk mendapat bonus XP maksimal!',
+            xpReward: 150
+        };
+
+        let mockAchievements = [
+            { id: 'a1', title: 'First Step', desc: 'Memainkan game pertama kali.', icon: 'flag', xp: 50, reqGames: 1 },
+            { id: 'a2', title: 'CT Master', desc: 'Mainkan 2 game Computational Thinking.', icon: 'brain', xp: 100, reqCategory: 'Computational Thinking', reqCount: 2 },
+            { id: 'a3', title: 'Game Addict', desc: 'Mainkan 5 game berbeda.', icon: 'gamepad-2', xp: 200, reqGames: 5 },
+            { id: 'a4', title: 'Boash Champion', desc: 'Mengumpulkan 1.000 XP total.', icon: 'crown', xp: 500, reqXp: 1000 }
+        ];
+        let mockUnlockedAchievements = new Set();
+
+        let mockLeaderboard = [
+            { id: 'S002', name: 'Budi Santoso', classLevel: '8', xp: 1250, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Budi' },
+            { id: 'S003', name: 'Citra Kirana', classLevel: '7', xp: 980, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Citra' },
+            { id: 'S004', name: 'Diana Putri', classLevel: '9', xp: 1500, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana' }
+        ];
+
+        let mockWorlds = [
+            { id: 1, title: 'World 1: Logika Dasar', desc: 'Pemahaman dasar alur berpikir komputasional.', category: 'Computational Thinking', icon: 'brain', color: 'from-blue-600 to-cyan-400' },
+            { id: 2, title: 'World 2: Algoritma', desc: 'Merangkai langkah yang sistematis dalam memecahkan masalah.', category: 'Flowchart', icon: 'git-merge', color: 'from-purple-600 to-pink-500' },
+            { id: 3, title: 'World 3: Sistem Komputer', desc: 'Mengenal bahasa dan perangkat keras komputer.', category: 'Sistem Komputer', icon: 'cpu', color: 'from-orange-500 to-yellow-400' }
+        ];
+
+        let state = {
+            searchQuery: '',
+            activeCategory: 'Semua',
+            activeClass: 'All',
+            activeDifficulty: 'All',
+            view: 'student'
+        };
+
+        function getStudentLevel(xp) {
+            return Math.floor((xp || 0) / 500) + 1;
+        }
+
+        function init() {
+            lucide.createIcons();
+            setupEventListeners();
+            
+            // Auto Load dari LocalStorage untuk state sebelum database
+            loadLocalData();
+
+            callBackend('getInitialData', [], (serverData, isFromServer) => {
+                if (isFromServer && serverData) {
+                    mockGames = serverData.games || mockGames;
+                    mockLeaderboard = serverData.students || mockLeaderboard; 
+                    saveLocalData();
+                }
+                
+                categories = ['Semua', ...new Set(mockGames.map(g => g.category))];
+                renderCategories();
+                renderGames();
+                renderAdminTable(); 
+                renderGameOfTheWeek();
+                
+                const savedUser = localStorage.getItem('boashUser');
+                if (savedUser) {
+                    mockStudent = JSON.parse(savedUser);
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    initPostLogin();
+                } else {
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                }
+            });
+        }
+        
+        function initPostLogin() {
+            document.getElementById('settingsAvatar').src = mockStudent.avatar;
+            updateStudentProfile();
+            renderContinuePlaying();
+            renderProgressStats();
+            renderDailyChallenge();
+            checkAchievements(false); 
+        }
+
+        function loadLocalData() {
+            try {
+                if(localStorage.getItem('boashGames')) mockGames = JSON.parse(localStorage.getItem('boashGames'));
+                if(localStorage.getItem('boashProgress')) mockProgress = JSON.parse(localStorage.getItem('boashProgress'));
+                if(localStorage.getItem('boashFavs')) mockFavorites = new Set(JSON.parse(localStorage.getItem('boashFavs')));
+                if(localStorage.getItem('boashAchievs')) mockUnlockedAchievements = new Set(JSON.parse(localStorage.getItem('boashAchievs')));
+            } catch(e) {}
+        }
+        function saveLocalData() {
+            localStorage.setItem('boashGames', JSON.stringify(mockGames));
+            localStorage.setItem('boashProgress', JSON.stringify(mockProgress));
+            localStorage.setItem('boashFavs', JSON.stringify(Array.from(mockFavorites)));
+            localStorage.setItem('boashAchievs', JSON.stringify(Array.from(mockUnlockedAchievements)));
+            localStorage.setItem('boashUser', JSON.stringify(mockStudent));
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const name = document.getElementById('loginName').value;
+            const classLvl = document.getElementById('loginClass').value;
+            
+            callBackend('loginStudent', [name, classLvl], (serverData, isFromServer) => {
+                if (isFromServer && serverData) {
+                    mockStudent = serverData.student;
+                    mockProgress = {};
+                    (serverData.progress || []).forEach(p => {
+                        mockProgress[p.gameId] = {
+                            currentLevel: p.currentLevel,
+                            maxLevel: p.maxLevel,
+                            progressPct: p.progressPct,
+                            lastPlayed: new Date(p.lastPlayed)
+                        };
+                    });
+                    mockFavorites = new Set(serverData.favorites || []);
+                } else {
+                    mockStudent.name = name || 'Ahmad Siswa';
+                    mockStudent.classLevel = classLvl;
+                    mockStudent.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`;
+                }
+                
+                saveLocalData();
+                initPostLogin();
+                
+                const overlay = document.getElementById('loginOverlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    triggerConfetti(); 
+                }, 500);
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('boashUser');
+            mockStudent = { id: 'S001', name: 'Guest', classLevel: '8', totalXP: 0, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest' };
+            mockProgress = {};
+            mockFavorites = new Set();
+            mockUnlockedAchievements = new Set();
+            
+            document.getElementById('loginName').value = '';
+            document.getElementById('loginOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('loginOverlay').style.opacity = '1';
+                switchView('student');
+            }, 50);
+        }
+
+        function handleSaveGame(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('formGameId').value;
+            const newGameData = {
+                id: id ? id : null,
+                title: document.getElementById('formTitle').value,
+                category: document.getElementById('formCategory').value,
+                classLevel: document.getElementById('formClass').value,
+                difficulty: document.getElementById('formDiff').value,
+                thumb: document.getElementById('formThumb').value,
+                xp: parseInt(document.getElementById('formXP').value),
+                desc: document.getElementById('formDesc').value,
+            };
+
+            callBackend('saveGameAdmin', [newGameData], (serverRes, isFromServer) => {
+                if (isFromServer && serverRes) {
+                    if (id) {
+                        const index = mockGames.findIndex(g => g.id.toString() === id.toString());
+                        if(index !== -1) mockGames[index] = serverRes;
+                    } else {
+                        mockGames.push(serverRes);
+                    }
+                } else {
+                    if (id) {
+                        const index = mockGames.findIndex(g => g.id == id);
+                        if(index !== -1) mockGames[index] = { ...mockGames[index], ...newGameData };
+                    } else {
+                        const newId = mockGames.length > 0 ? Math.max(...mockGames.map(g => g.id)) + 1 : 1;
+                        mockGames.push({ id: newId, ...newGameData });
+                    }
+                }
+
+                saveLocalData();
+                categories = ['Semua', ...new Set(mockGames.map(g => g.category))];
+                renderCategories();
+                closeAdminModal();
+                renderAdminTable(); 
+                renderGames();
+            });
+        }
+
+        // Custom Confirm Logic untuk menghindari confirm() bawaan browser
+        let gameToDeleteId = null;
+        
+        function deleteGame(gameId) {
+            gameToDeleteId = gameId;
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Animate in
+            setTimeout(() => { content.classList.remove('scale-95'); content.classList.add('scale-100'); }, 10);
+            
+            document.getElementById('confirmActionBtn').onclick = processDeleteGame;
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmModalContent');
+            
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+                gameToDeleteId = null;
+            }, 300);
+        }
+
+        function processDeleteGame() {
+            if(!gameToDeleteId) return;
+            
+            closeConfirmModal();
+            callBackend('deleteGameAdmin', [gameToDeleteId], (serverRes, isFromServer) => {
+                const index = mockGames.findIndex(g => g.id.toString() === gameToDeleteId.toString());
+                if (index !== -1) {
+                    mockGames.splice(index, 1);
+                    saveLocalData();
+                    renderAdminTable();
+                    renderGames();
+                }
+            });
+        }
+
+        function switchView(targetView) {
+            state.view = targetView;
+            
+            const views = ['studentView', 'adminView', 'progressView', 'favoritesView', 'leaderboardView', 'achievementView', 'learningWorldView', 'settingsView'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('#sidebarNav .nav-item').forEach(el => {
+                el.classList.remove('bg-brand-primary/10', 'text-brand-primary');
+                el.classList.add('text-gray-400');
+                if (el.dataset.target === targetView || (targetView === 'student' && el.dataset.target === 'home')) {
+                    el.classList.remove('text-gray-400');
+                    el.classList.add('bg-brand-primary/10', 'text-brand-primary');
+                }
+            });
+
+            if (targetView === 'admin') {
+                document.getElementById('adminView').classList.remove('hidden');
+                renderAdminTable();
+            } else if (targetView === 'progress') {
+                document.getElementById('progressView').classList.remove('hidden');
+                renderProgressStats();
+                renderWeeklyStats();
+            } else if (targetView === 'favorites') {
+                document.getElementById('favoritesView').classList.remove('hidden');
+                renderFavorites();
+            } else if (targetView === 'leaderboard') {
+                document.getElementById('leaderboardView').classList.remove('hidden');
+                renderLeaderboard();
+            } else if (targetView === 'achievement') {
+                document.getElementById('achievementView').classList.remove('hidden');
+                renderAchievements();
+            } else if (targetView === 'learningworld') {
+                document.getElementById('learningWorldView').classList.remove('hidden');
+                renderLearningWorld();
+            } else if (targetView === 'settings') {
+                document.getElementById('settingsView').classList.remove('hidden');
+            } else {
+                document.getElementById('studentView').classList.remove('hidden');
+                categories = ['Semua', ...new Set(mockGames.map(g => g.category))];
+                renderCategories();
+                renderGames();
+                renderContinuePlaying();
+            }
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            if (mockGames.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">Belum ada data game.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = mockGames.map(game => `
+                <tr class="hover:bg-gray-800/40 transition-colors group">
+                    <td class="p-4 text-sm text-gray-500 font-mono">#${game.id}</td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-4">
+                            <img src="${game.thumb}" alt="thumb" class="w-14 h-10 rounded-md object-cover border border-gray-700 shrink-0">
+                            <div>
+                                <div class="font-bold text-white text-sm group-hover:text-brand-primary transition-colors">${game.title}</div>
+                                <div class="text-[10px] text-brand-xp font-medium mt-0.5">${game.xp} XP</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 text-sm text-gray-300">
+                        <span class="px-2.5 py-1 bg-gray-800 rounded-lg border border-gray-700 text-xs">${game.category}</span>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-sm text-gray-300 font-medium">Kelas ${game.classLevel}</div>
+                        <div class="text-[10px] text-gray-500 uppercase mt-0.5">${game.difficulty}</div>
+                    </td>
+                    <td class="p-4 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button onclick="openAdminModal(${game.id})" class="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-colors" title="Edit Game">
+                                <i data-lucide="edit-3" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteGame(${game.id})" class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors" title="Hapus Game">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openAdminModal(gameId = null) {
+            const adminForm = document.getElementById('gameForm');
+            const adminModal = document.getElementById('adminFormModal');
+            adminForm.reset();
+            document.getElementById('formGameId').value = '';
+            document.getElementById('adminModalTitle').textContent = 'Tambah Game Baru';
+
+            if (gameId) {
+                const game = mockGames.find(g => g.id === gameId);
+                if (game) {
+                    document.getElementById('adminModalTitle').textContent = 'Edit Game';
+                    document.getElementById('formGameId').value = game.id;
+                    document.getElementById('formTitle').value = game.title;
+                    document.getElementById('formCategory').value = game.category;
+                    document.getElementById('formClass').value = game.classLevel;
+                    document.getElementById('formDiff').value = game.difficulty;
+                    document.getElementById('formThumb').value = game.thumb;
+                    document.getElementById('formXP').value = game.xp;
+                    document.getElementById('formDesc').value = game.desc;
+                }
+            }
+            adminModal.classList.remove('opacity-0', 'pointer-events-none');
+            adminModal.querySelector('.bg-brand-card').classList.remove('scale-95');
+        }
+
+        function closeAdminModal() {
+            const adminModal = document.getElementById('adminFormModal');
+            adminModal.classList.add('opacity-0', 'pointer-events-none');
+            adminModal.querySelector('.bg-brand-card').classList.add('scale-95');
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('searchInput');
+            const classFilter = document.getElementById('classFilter');
+            const difficultyFilter = document.getElementById('difficultyFilter');
+            const modal = document.getElementById('gameModal');
+
+            searchInput.addEventListener('input', (e) => { state.searchQuery = e.target.value; renderGames(); });
+            classFilter.addEventListener('change', (e) => { state.activeClass = e.target.value; renderGames(); });
+            difficultyFilter.addEventListener('change', (e) => { state.activeDifficulty = e.target.value; renderGames(); });
+            modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+        }
+
+        function openModal(gameId) {
+            const modal = document.getElementById('gameModal');
+            const modalContent = document.getElementById('modalContent');
+            const game = mockGames.find(g => g.id === gameId);
+            if(!game) return;
+
+            document.getElementById('modalTitle').textContent = game.title;
+            document.getElementById('modalCategory').textContent = game.category;
+            document.getElementById('modalDesc').textContent = game.desc;
+            document.getElementById('modalClass').textContent = game.classLevel;
+            document.getElementById('modalDiff').textContent = game.difficulty;
+            document.getElementById('modalXP').textContent = `+${game.xp} XP`;
+            document.getElementById('modalThumb').src = game.thumb;
+            document.getElementById('modalCover').src = game.thumb;
+
+            document.getElementById('modalPlayBtn').onclick = () => playGame(gameId);
+            
+            const favBtn = document.getElementById('modalFavBtn');
+            updateFavBtnUI(mockFavorites.has(gameId));
+            favBtn.onclick = () => toggleFavorite(gameId);
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('gameModal');
+            const modalContent = document.getElementById('modalContent');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+        }
+
+        function playGame(gameId) {
+            const game = mockGames.find(g => g.id === gameId);
+            if(!game) return;
+            closeModal(); 
+            
+            callBackend('savePlayData', [mockStudent.id, gameId, game.xp], (serverRes, isFromServer) => {
+                if (isFromServer && serverRes) {
+                    mockStudent.totalXP = serverRes.newTotalXP;
+                    if(!mockProgress[gameId]) {
+                        mockProgress[gameId] = { currentLevel: 1, maxLevel: 10, progressPct: 10, lastPlayed: new Date() };
+                    } else {
+                        let p = mockProgress[gameId];
+                        if (p.currentLevel < p.maxLevel) {
+                            p.currentLevel++;
+                            p.progressPct = Math.round((p.currentLevel / p.maxLevel) * 100);
+                        }
+                        p.lastPlayed = new Date();
+                    }
+                } else {
+                    mockStudent.totalXP += game.xp;
+                    if(!mockProgress[gameId]) {
+                        mockProgress[gameId] = { currentLevel: 1, maxLevel: 10, progressPct: 10, lastPlayed: new Date() };
+                    } else {
+                        let p = mockProgress[gameId];
+                        if (p.currentLevel < p.maxLevel) {
+                            p.currentLevel++;
+                            p.progressPct = Math.round((p.currentLevel / p.maxLevel) * 100);
+                        }
+                        p.lastPlayed = new Date();
+                    }
+                }
+                
+                saveLocalData();
+                updateStudentProfile();
+                
+                // Show visual feedback toast
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-20 right-6 bg-brand-card border border-brand-xp text-white px-6 py-4 rounded-xl shadow-2xl z-50 transform translate-y-10 opacity-0 transition-all duration-300 flex items-center gap-4';
+                toast.innerHTML = `
+                    <div class="w-10 h-10 bg-brand-xp/20 rounded-full flex items-center justify-center text-brand-xp border border-brand-xp/50">
+                        <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm">Game Dimainkan!</div>
+                        <div class="text-xs text-gray-300 font-medium">+${game.xp} XP Diperoleh</div>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                lucide.createIcons();
+                
+                setTimeout(() => { toast.classList.remove('translate-y-10', 'opacity-0'); }, 10);
+                setTimeout(() => { toast.classList.add('translate-y-10', 'opacity-0'); }, 3000);
+                setTimeout(() => { 
+                    toast.remove(); 
+                    renderContinuePlaying(); 
+                    renderProgressStats(); 
+                    checkAchievements(); 
+                }, 3300);
+
+                triggerConfetti();
+            });
+        }
+
+        function setCategory(cat) {
+            state.activeCategory = cat;
+            renderCategories();
+            renderGames();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoryContainer');
+            if(!container) return;
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" class="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${state.activeCategory === cat ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/30' : 'bg-brand-card text-gray-400 hover:bg-gray-800 hover:text-white border border-gray-700'}">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function getFilteredGames() {
+            return mockGames.filter(game => {
+                const matchCat = state.activeCategory === 'Semua' || game.category === state.activeCategory;
+                const matchClass = state.activeClass === 'All' || game.classLevel === state.activeClass;
+                const matchDiff = state.activeDifficulty === 'All' || game.difficulty === state.activeDifficulty;
+                const matchSearch = game.title.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
+                                    game.category.toLowerCase().includes(state.searchQuery.toLowerCase());
+                return matchCat && matchClass && matchDiff && matchSearch;
+            });
+        }
+
+        function renderGameOfTheWeek() {
+            const section = document.getElementById('gameOfTheWeekSection');
+            if(mockGames.length > 0) {
+                const game = mockGames[0]; 
+                document.getElementById('gotwCover').src = game.thumb;
+                document.getElementById('gotwTitle').textContent = game.title;
+                document.getElementById('gotwDesc').textContent = game.desc;
+                document.getElementById('gotwCategory').textContent = game.category;
+                document.getElementById('gotwClass').textContent = 'Kelas ' + game.classLevel;
+                document.getElementById('gotwDiff').textContent = game.difficulty;
+                document.getElementById('gotwXP').textContent = game.xp + ' XP';
+                document.getElementById('gotwPlayBtn').onclick = () => openModal(game.id);
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        }
+
+        function renderGames() {
+            const filtered = getFilteredGames();
+            const gamesGrid = document.getElementById('gamesGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (filtered.length === 0) {
+                gamesGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+                gamesGrid.classList.remove('hidden');
+                
+                gamesGrid.innerHTML = filtered.map(game => `
+                    <div onclick="openModal(${game.id})" class="group bg-brand-card rounded-2xl overflow-hidden border border-gray-700 hover:border-brand-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-primary/20 cursor-pointer flex flex-col h-full">
+                        <div class="relative h-40 w-full overflow-hidden shrink-0">
+                            <img src="${game.thumb}" alt="${game.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
+                            <div class="absolute top-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-[10px] font-bold text-white">
+                                KELAS ${game.classLevel}
+                            </div>
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <div class="w-12 h-12 bg-brand-primary/90 rounded-full flex items-center justify-center backdrop-blur-sm shadow-lg transform scale-50 group-hover:scale-100 transition-transform duration-300">
+                                    <i data-lucide="play" class="w-6 h-6 text-white fill-current ml-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <div class="text-[10px] font-bold text-brand-primary uppercase tracking-wider mb-1">${game.category}</div>
+                            <h4 class="font-heading font-bold text-white text-lg mb-2 leading-tight group-hover:text-brand-primary transition-colors">${game.title}</h4>
+                            <p class="text-xs text-gray-400 mb-4 line-clamp-2 flex-1">${game.desc}</p>
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-700/50 mt-auto">
+                                <div class="flex items-center gap-1 text-brand-xp">
+                                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                                    <span class="text-xs font-bold">${game.xp} XP</span>
+                                </div>
+                                <div class="px-2 py-1 rounded-md bg-gray-700/50 text-[10px] text-gray-300 font-medium">
+                                    ${game.difficulty}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        function updateStudentProfile() {
+            const level = getStudentLevel(mockStudent.totalXP);
+            document.getElementById('headerStudentName').textContent = mockStudent.name;
+            document.getElementById('headerStudentAvatar').src = mockStudent.avatar;
+            document.getElementById('headerStudentLevel').innerHTML = `Lv. ${level} &bull; ${(mockStudent.totalXP || 0).toLocaleString()} XP`;
+        }
+
+        function renderContinuePlaying() {
+            const section = document.getElementById('continuePlayingSection');
+            const grid = document.getElementById('continuePlayingGrid');
+            const playedGameIds = Object.keys(mockProgress);
+            
+            if (playedGameIds.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            
+            const sortedIds = playedGameIds.sort((a, b) => mockProgress[b].lastPlayed - mockProgress[a].lastPlayed).slice(0, 3);
+            
+            grid.innerHTML = sortedIds.map(id => {
+                const game = mockGames.find(g => g.id == id);
+                if(!game) return '';
+                const prog = mockProgress[id];
+                
+                return `
+                    <div onclick="openModal(${game.id})" class="bg-brand-card rounded-xl p-4 border border-gray-700 hover:border-brand-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex gap-4 items-center group">
+                        <img src="${game.thumb}" class="w-16 h-16 rounded-lg object-cover shrink-0 border border-gray-700 group-hover:border-brand-primary/50 transition-colors">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-white text-sm truncate mb-1 group-hover:text-brand-primary transition-colors">${game.title}</h4>
+                            <div class="flex justify-between text-xs text-gray-400 mb-2">
+                                <span>Level ${prog.currentLevel}/${prog.maxLevel}</span>
+                                <span>${prog.progressPct}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                <div class="bg-brand-primary h-1.5 rounded-full transition-all duration-500" style="width: ${prog.progressPct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProgressStats() {
+            document.getElementById('progressName').textContent = mockStudent.name;
+            document.getElementById('progressAvatar').src = mockStudent.avatar;
+            document.getElementById('progressClass').textContent = mockStudent.classLevel;
+            document.getElementById('progressLevelNum').textContent = getStudentLevel(mockStudent.totalXP);
+            document.getElementById('progressTotalXP').textContent = (mockStudent.totalXP || 0).toLocaleString();
+            
+            document.getElementById('statGamesPlayed').textContent = Object.keys(mockProgress).length;
+            document.getElementById('statGamesCompleted').textContent = Object.values(mockProgress).filter(p => p.progressPct === 100).length;
+            document.getElementById('statAchievements').textContent = mockUnlockedAchievements.size;
+
+            const analyticsContainer = document.getElementById('categoryAnalytics');
+            if (analyticsContainer) {
+                const catStats = {};
+                mockGames.forEach(g => {
+                    if(!catStats[g.category]) catStats[g.category] = { total: 0, completed: 0, progress: 0 };
+                    catStats[g.category].total++;
+                    if(mockProgress[g.id]) {
+                        catStats[g.category].progress += mockProgress[g.id].progressPct;
+                        if(mockProgress[g.id].progressPct === 100) catStats[g.category].completed++;
+                    }
+                });
+
+                let analyticsHTML = '';
+                for (const [cat, stats] of Object.entries(catStats)) {
+                    if (cat === 'Semua' || stats.total === 0) continue;
+                    const avgProgress = Math.round(stats.progress / stats.total);
+                    const isMastered = avgProgress === 100;
+                    
+                    analyticsHTML += `
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="font-bold text-gray-300 flex items-center gap-2">
+                                    ${cat} ${isMastered ? '<i data-lucide="check-circle" class="w-4 h-4 text-brand-accent"></i>' : ''}
+                                </span>
+                                <span class="${isMastered ? 'text-brand-accent font-bold' : 'text-gray-400'}">${avgProgress}%</span>
+                            </div>
+                            <div class="w-full bg-gray-700/50 rounded-full h-2.5 overflow-hidden border border-gray-700">
+                                <div class="bg-gradient-to-r ${isMastered ? 'from-brand-accent to-green-400' : 'from-brand-primary to-brand-secondary'} h-2.5 rounded-full transition-all duration-1000 relative" style="width: ${avgProgress}%">
+                                    ${isMastered ? '<div class="absolute inset-0 bg-white/20 animate-pulse"></div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                analyticsContainer.innerHTML = analyticsHTML;
+                lucide.createIcons();
+            }
+        }
+
+        function renderWeeklyStats() {
+            const chart = document.getElementById('weeklyChart');
+            const labels = document.getElementById('weeklyLabels');
+            if(!chart || !labels) return;
+
+            const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+            const data = [1, 3, 2, 5, 0, 4, 2]; 
+            const maxData = Math.max(...data, 1); 
+
+            chart.innerHTML = data.map((val, i) => {
+                const heightPct = (val / maxData) * 100;
+                const isToday = i === 6; 
+                return `
+                    <div class="w-full flex flex-col justify-end group relative h-full">
+                        <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">${val} Game</div>
+                        <div class="w-full bg-gradient-to-t ${isToday ? 'from-brand-accent/80 to-brand-accent' : 'from-brand-primary/50 to-brand-primary'} rounded-t-md transition-all duration-1000 ease-out hover:brightness-125" style="height: 0%;" data-target-height="${heightPct}%"></div>
+                    </div>
+                `;
+            }).join('');
+            labels.innerHTML = days.map((day, i) => `<div class="w-full text-center ${i===6 ? 'text-brand-accent font-bold' : ''}">${day}</div>`).join('');
+
+            setTimeout(() => {
+                chart.querySelectorAll('[data-target-height]').forEach(bar => {
+                    bar.style.height = bar.getAttribute('data-target-height');
+                });
+            }, 100);
+        }
+
+        function renderDailyChallenge() {
+            const section = document.getElementById('dailyChallengeSection');
+            const game = mockGames.find(g => g.id === mockDailyChallenge.gameId);
+            if(!game) return;
+            
+            section.classList.remove('hidden');
+            document.getElementById('dcTitle').textContent = mockDailyChallenge.title;
+            document.getElementById('dcDesc').textContent = mockDailyChallenge.desc;
+            document.getElementById('dcReward').textContent = `+${mockDailyChallenge.xpReward} XP`;
+            document.getElementById('dcPlayBtn').onclick = () => openModal(game.id);
+        }
+
+        function updateFavBtnUI(isFav) {
+            const icon = document.getElementById('modalFavIcon');
+            const text = document.getElementById('modalFavText');
+            if(isFav) {
+                icon.classList.add('fill-brand-secondary', 'text-brand-secondary');
+                text.textContent = 'Hapus Favorit';
+            } else {
+                icon.classList.remove('fill-brand-secondary', 'text-brand-secondary');
+                text.textContent = 'Tambah Favorit';
+            }
+        }
+
+        function toggleFavorite(gameId) {
+            callBackend('toggleFavoriteDb', [mockStudent.id, gameId], (serverRes, isFromServer) => {
+                if (isFromServer && serverRes) {
+                    if (serverRes.isFav) mockFavorites.add(gameId);
+                    else mockFavorites.delete(gameId);
+                    updateFavBtnUI(serverRes.isFav);
+                } else {
+                    if(mockFavorites.has(gameId)) {
+                        mockFavorites.delete(gameId);
+                        updateFavBtnUI(false);
+                    } else {
+                        mockFavorites.add(gameId);
+                        updateFavBtnUI(true);
+                    }
+                }
+                saveLocalData();
+                if(state.view === 'favorites') renderFavorites(); 
+            });
+        }
+
+        function renderFavorites() {
+            const grid = document.getElementById('favoritesGrid');
+            const empty = document.getElementById('emptyFavorites');
+            const favGames = mockGames.filter(g => mockFavorites.has(g.id));
+            
+            if (favGames.length === 0) {
+                grid.classList.add('hidden');
+                empty.classList.remove('hidden');
+                empty.classList.add('flex');
+            } else {
+                empty.classList.add('hidden');
+                empty.classList.remove('flex');
+                grid.classList.remove('hidden');
+                
+                grid.innerHTML = favGames.map(game => `
+                    <div onclick="openModal(${game.id})" class="group bg-brand-card rounded-2xl overflow-hidden border border-brand-secondary/30 hover:border-brand-secondary transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-secondary/20 cursor-pointer flex flex-col h-full relative">
+                        <div class="absolute top-3 right-3 z-10 w-8 h-8 bg-brand-card/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-gray-700">
+                            <i data-lucide="heart" class="w-4 h-4 fill-brand-secondary text-brand-secondary"></i>
+                        </div>
+                        <div class="relative h-40 w-full overflow-hidden shrink-0">
+                            <img src="${game.thumb}" alt="${game.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors"></div>
+                        </div>
+                        <div class="p-4 flex flex-col flex-1">
+                            <div class="text-[10px] font-bold text-brand-primary uppercase tracking-wider mb-1">${game.category}</div>
+                            <h4 class="font-heading font-bold text-white text-lg mb-2 leading-tight group-hover:text-brand-secondary transition-colors">${game.title}</h4>
+                            <p class="text-xs text-gray-400 line-clamp-2">${game.desc}</p>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            }
+        }
+
+        function renderLeaderboard() {
+            const fullLeaderboard = [
+                ...mockLeaderboard,
+                { ...mockStudent, id: 'currentUser', isCurrent: true, xp: mockStudent.totalXP || 0 }
+            ];
+            
+            fullLeaderboard.sort((a, b) => b.xp - a.xp);
+            
+            const tbody = document.getElementById('leaderboardBody');
+            let currentUserRank = 0;
+            
+            tbody.innerHTML = fullLeaderboard.map((user, index) => {
+                const rank = index + 1;
+                if(user.isCurrent) currentUserRank = rank;
+                
+                let rankVisual = `<span class="font-bold text-gray-400">#${rank}</span>`;
+                if(rank === 1) rankVisual = `<div class="w-8 h-8 mx-auto rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center border border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.5)]"><i data-lucide="award" class="w-5 h-5 fill-current"></i></div>`;
+                if(rank === 2) rankVisual = `<div class="w-8 h-8 mx-auto rounded-full bg-gray-300/20 text-gray-300 flex items-center justify-center border border-gray-300/50"><i data-lucide="award" class="w-5 h-5 fill-current"></i></div>`;
+                if(rank === 3) rankVisual = `<div class="w-8 h-8 mx-auto rounded-full bg-orange-400/20 text-orange-400 flex items-center justify-center border border-orange-400/50"><i data-lucide="award" class="w-5 h-5 fill-current"></i></div>`;
+                
+                return `
+                    <tr class="${user.isCurrent ? 'bg-brand-primary/10 border-l-2 border-brand-primary' : 'hover:bg-gray-800/40'} transition-colors">
+                        <td class="p-4 text-center">${rankVisual}</td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${user.avatar}" class="w-10 h-10 rounded-full border-2 ${user.isCurrent ? 'border-brand-primary' : 'border-gray-600'} bg-white">
+                                <div>
+                                    <div class="font-bold ${user.isCurrent ? 'text-brand-primary' : 'text-white'}">${user.name} ${user.isCurrent ? '(Kamu)' : ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-sm text-gray-400">Kelas ${user.classLevel}</td>
+                        <td class="p-4 text-right">
+                            <span class="font-bold text-brand-xp">${(user.xp || 0).toLocaleString()} XP</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            document.getElementById('myRankBadge').textContent = `#${currentUserRank}`;
+            document.getElementById('myRankName').textContent = mockStudent.name;
+            document.getElementById('myRankXP').textContent = `${(mockStudent.totalXP || 0).toLocaleString()} XP`;
+            lucide.createIcons();
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievementGrid');
+            grid.innerHTML = mockAchievements.map(ach => {
+                const isUnlocked = mockUnlockedAchievements.has(ach.id);
+                return `
+                    <div class="bg-brand-card p-5 rounded-2xl border ${isUnlocked ? 'border-brand-xp shadow-[0_0_15px_rgba(245,158,11,0.15)]' : 'border-gray-700 opacity-60 grayscale'} flex flex-col items-center text-center transition-all relative overflow-hidden group">
+                        ${isUnlocked ? '<div class="absolute top-0 right-0 w-16 h-16 bg-brand-xp opacity-10 blur-xl rounded-full"></div>' : ''}
+                        
+                        <div class="w-14 h-14 rounded-full ${isUnlocked ? 'bg-gradient-to-br from-brand-xp to-orange-500' : 'bg-gray-700'} flex items-center justify-center text-white mb-3 shadow-lg shrink-0">
+                            <i data-lucide="${ach.icon}" class="w-7 h-7 ${isUnlocked ? 'fill-current' : ''}"></i>
+                        </div>
+                        <h4 class="font-bold text-white mb-1 text-sm">${ach.title}</h4>
+                        <p class="text-[10px] text-gray-400 mb-2 leading-relaxed flex-1">${ach.desc}</p>
+                        <div class="mt-auto px-3 py-1 bg-gray-800 rounded-full text-[10px] font-bold ${isUnlocked ? 'text-brand-xp' : 'text-gray-500'}">
+                            ${isUnlocked ? 'UNLOCKED' : `+${ach.xp} XP`}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function checkAchievements(showToast = true) {
+            const playedGamesCount = Object.keys(mockProgress).length;
+            const playedCTCount = Object.keys(mockProgress).filter(id => {
+                const game = mockGames.find(g => g.id == id);
+                return game && game.category === 'Computational Thinking';
+            }).length;
+            
+            let unlockedAny = false;
+
+            mockAchievements.forEach(ach => {
+                if(!mockUnlockedAchievements.has(ach.id)) {
+                    let unlock = false;
+                    if(ach.reqGames && playedGamesCount >= ach.reqGames) unlock = true;
+                    if(ach.reqCategory && ach.reqCategory === 'Computational Thinking' && playedCTCount >= ach.reqCount) unlock = true;
+                    if(ach.reqXp && mockStudent.totalXP >= ach.reqXp) unlock = true;
+                    
+                    if(unlock) {
+                        mockUnlockedAchievements.add(ach.id);
+                        mockStudent.totalXP += ach.xp; 
+                        unlockedAny = true;
+                        
+                        if(showToast) {
+                            const toast = document.createElement('div');
+                            toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 bg-brand-card border-2 border-brand-xp text-white p-4 pr-6 rounded-2xl shadow-2xl z-50 transform -translate-y-10 opacity-0 transition-all duration-500 flex items-center gap-4';
+                            toast.innerHTML = `
+                                <div class="w-12 h-12 bg-gradient-to-br from-brand-xp to-orange-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-brand-xp/40 animate-bounce">
+                                    <i data-lucide="${ach.icon}" class="w-6 h-6 fill-current"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-brand-xp tracking-wider uppercase mb-0.5">Achievement Unlocked!</div>
+                                    <div class="font-bold text-white leading-tight">${ach.title}</div>
+                                    <div class="text-xs text-gray-300 font-medium">+${ach.xp} XP</div>
+                                </div>
+                            `;
+                            document.body.appendChild(toast);
+                            lucide.createIcons();
+                            
+                            setTimeout(() => { toast.classList.remove('-translate-y-10', 'opacity-0'); }, 10);
+                            setTimeout(() => { toast.classList.add('-translate-y-10', 'opacity-0'); }, 4000);
+                            setTimeout(() => { toast.remove(); }, 4500);
+
+                            setTimeout(triggerConfetti, 100);
+                            setTimeout(triggerConfetti, 400);
+                        }
+                    }
+                }
+            });
+
+            if (unlockedAny) {
+                saveLocalData();
+                if (state.view === 'achievement') renderAchievements();
+                updateStudentProfile();
+            }
+        }
+
+        function renderLearningWorld() {
+            const container = document.getElementById('worldsContainer');
+            let isPreviousWorldCompleted = true; 
+            
+            container.innerHTML = mockWorlds.map((world, index) => {
+                const worldGames = mockGames.filter(g => g.category.includes(world.category.split('/')[0].trim()));
+                let totalProgress = 0;
+                worldGames.forEach(g => { if (mockProgress[g.id]) totalProgress += mockProgress[g.id].progressPct; });
+                const avgProgress = worldGames.length > 0 ? Math.round(totalProgress / worldGames.length) : 0;
+                const isCompleted = avgProgress === 100;
+                const isLocked = !isPreviousWorldCompleted;
+                isPreviousWorldCompleted = isCompleted; 
+                
+                const gameNodes = worldGames.map((g, i) => {
+                    const p = mockProgress[g.id] ? mockProgress[g.id].progressPct : 0;
+                    const gameCompleted = p === 100;
+                    const nodeColor = gameCompleted ? 'bg-brand-accent' : (p > 0 ? 'bg-brand-xp' : 'bg-gray-600');
+                    return `
+                        <div onclick="${isLocked ? '' : `openModal(${g.id})`}" class="relative z-10 w-10 h-10 shrink-0 rounded-full ${nodeColor} border-4 border-brand-card flex items-center justify-center shadow-lg cursor-pointer ${isLocked ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-110'} transition-transform group" title="${g.title}">
+                            ${gameCompleted ? '<i data-lucide="check" class="w-4 h-4 text-white"></i>' : (p>0 ? '<i data-lucide="play" class="w-3 h-3 text-white fill-current"></i>' : '<i data-lucide="lock" class="w-3 h-3 text-gray-300"></i>')}
+                            <div class="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 px-2 py-1 rounded text-[10px] text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity backdrop-blur-sm border border-gray-700">
+                                ${g.title} (${p}%)
+                            </div>
+                        </div>
+                    `;
+                }).join('<div class="w-8 sm:w-12 h-1 shrink-0 bg-gray-700 z-0 -mx-1"></div>');
+
+                return `
+                    <div class="relative z-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-12 w-full group ${isLocked ? 'opacity-60 grayscale' : ''}">
+                        <div class="absolute left-8 sm:left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-br ${world.color} border-4 border-brand-card flex items-center justify-center shadow-[0_0_20px_rgba(0,0,0,0.5)] z-20">
+                            <i data-lucide="${isLocked ? 'lock' : world.icon}" class="w-7 h-7 text-white ${isLocked ? '' : 'animate-pulse'}"></i>
+                        </div>
+                        <div class="w-full sm:w-1/2 pl-24 sm:pl-0 ${index % 2 === 0 ? 'sm:pr-16 sm:text-right' : 'sm:pl-16 sm:ml-auto text-left'}">
+                            <div class="bg-brand-card p-6 rounded-2xl border ${isCompleted ? 'border-brand-accent shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'border-gray-700'} shadow-xl relative overflow-hidden transition-all duration-300 ${isLocked ? '' : 'hover:shadow-2xl hover:-translate-y-1'}">
+                                ${isCompleted ? '<div class="absolute -right-6 -top-6 w-24 h-24 bg-brand-accent/10 rounded-full blur-xl pointer-events-none"></div>' : ''}
+                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">${world.category}</div>
+                                <h3 class="text-xl font-heading font-bold text-white mb-2 flex items-center ${index % 2 === 0 ? 'sm:justify-end' : ''} gap-2">
+                                    ${world.title} ${isCompleted ? '<i data-lucide="check-circle" class="w-5 h-5 text-brand-accent"></i>' : ''}
+                                </h3>
+                                <p class="text-sm text-gray-400 mb-5">${world.desc}</p>
+                                <div class="w-full bg-gray-800 rounded-full h-2 mb-5 overflow-hidden border border-gray-700">
+                                    <div class="bg-gradient-to-r ${world.color} h-2 rounded-full transition-all duration-1000" style="width: ${avgProgress}%"></div>
+                                </div>
+                                <div class="flex items-center ${index % 2 === 0 ? 'sm:justify-end' : ''} overflow-x-auto hide-scrollbar py-2">
+                                    ${gameNodes || '<span class="text-xs text-gray-500 italic">Stage belum tersedia...</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function triggerConfetti() {
+            const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'fixed w-3 h-3 rounded-sm z-[100] pointer-events-none';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = '50%';
+                confetti.style.top = '50%';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = 50 + Math.random() * 150;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity - 100;
+                
+                confetti.animate([
+                    { transform: 'translate(-50%, -50%) rotate(0deg)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 1000,
+                    easing: 'cubic-bezier(.37,0,.9,.3)',
+                    fill: 'forwards'
+                });
+                
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 2000);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
