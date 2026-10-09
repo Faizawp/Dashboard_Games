@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — BOASH EDU GAME HUB</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        boash: {
+                            dark: '#0F172A', card: '#1E293B', accent: '#6366F1', accentHover: '#4F46E5', secondary: '#06B6D4', success: '#22C55E', warning: '#F59E0B', danger: '#EF4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0F172A; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-boash-dark text-white font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="sticky top-0 z-40 glass border-b border-white/10">
+        <div class="container mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-boash-accent to-boash-secondary flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight">Admin Portal</h1>
+                    <span class="text-xs text-gray-400">BOASH Edu Game Hub</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-semibold transition-colors border border-white/10 flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 lg:px-8 py-8">
+        <!-- Statistik Ringkas -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass p-6 rounded-2xl border border-white/5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-boash-accent/20 text-boash-accent flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold" id="adminTotalGames">0</div>
+                    <div class="text-xs text-gray-400">Total Game Aktif</div>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-white/5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-boash-secondary/20 text-boash-secondary flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">124</div>
+                    <div class="text-xs text-gray-400">Total Pemain Terdaftar</div>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-white/5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-500 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">2,851</div>
+                    <div class="text-xs text-gray-400">Total Sesi Dimainkan</div>
+                </div>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-white/5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-boash-success/20 text-boash-success flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">450</div>
+                    <div class="text-xs text-gray-400">Skor Tersimpan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Manajemen Game -->
+        <div class="glass rounded-2xl border border-white/5 overflow-hidden shadow-2xl">
+            <div class="p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold">Manajemen Katalog Game</h2>
+                    <p class="text-xs text-gray-400">Tambah, ubah, atau hapus game yang terhubung dari database.</p>
+                </div>
+                <button onclick="openAddGameModal()" class="px-5 py-2.5 bg-boash-accent hover:bg-boash-accentHover text-white text-sm font-semibold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Tambah Game Baru
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-white/5 text-gray-400 border-b border-white/10 text-xs uppercase tracking-wider">
+                            <th class="p-4">Game</th>
+                            <th class="p-4">Mapel / Kelas</th>
+                            <th class="p-4">Kesulitan</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4">Featured</th>
+                            <th class="p-4 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminGameTableBody" class="divide-y divide-white/5">
+                        <!-- Filled via JS -->
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-gray-400">Memuat data game...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="gameFormModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeGameFormModal()"></div>
+        <div class="relative bg-boash-card w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl p-6 border border-white/10 shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10">
+                <h3 id="modalFormTitle" class="text-xl font-bold">Tambah Game Baru</h3>
+                <button onclick="closeGameFormModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="gameForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="formGameId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Judul Game</label>
+                        <input type="text" id="formTitle" required class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Mata Pelajaran</label>
+                        <select id="formSubject" class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white">
+                            <option value="Informatika">Informatika</option>
+                            <option value="Coding">Coding</option>
+                            <option value="AI">AI</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Deskripsi Singkat</label>
+                    <textarea id="formDesc" rows="2" required class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Thumbnail URL (Google Drive / Placeholder)</label>
+                        <input type="url" id="formThumbnail" required class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white" placeholder="https://...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">URL Game (Link Eksternal)</label>
+                        <input type="url" id="formGameUrl" required class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Kelas</label>
+                        <select id="formClass" class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white">
+                            <option value="7">Kelas 7</option>
+                            <option value="8">Kelas 8</option>
+                            <option value="9">Kelas 9</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Kesulitan</label>
+                        <select id="formDifficulty" class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white">
+                            <option value="Mudah">Mudah</option>
+                            <option value="Sedang">Sedang</option>
+                            <option value="Sulit">Sulit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Status</label>
+                        <select id="formStatus" class="w-full bg-boash-dark border border-white/10 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-boash-accent text-white">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" id="formFeatured" class="w-4 h-4 accent-boash-accent rounded">
+                    <label for="formFeatured" class="text-xs text-gray-300 font-medium">Jadikan Game Pilihan Guru (Featured)</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
+                    <button type="button" onclick="closeGameFormModal()" class="px-5 py-2.5 bg-white/5 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-semibold transition-colors">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 bg-boash-accent hover:bg-boash-accentHover text-white text-xs font-bold rounded-xl shadow-lg transition-all">Simpan Game</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi API yang sama persis dengan index.html
+        const CONFIG = {
+            API_URL: "https://script.google.com/macros/s/AKfycbwI78YFrZBluA5GskluDBbr5ikdpMEqYzxHpPnkuPeoIhCacmKKrmjsR5fUeU9gWKVdVg/exec", // Masukkan URL Apps Script Anda jika sudah online
+            USE_MOCK_DATA: false
+        };
+
+        let adminGames = [];
+
+        async function initAdmin() {
+            // Muat game (menggunakan mock data atau API)
+            if(CONFIG.USE_MOCK_DATA || !CONFIG.API_URL) {
+                adminGames = [
+                    { id: 'GM001', title: 'Flowchart Adventure', description: 'Petualangan menyusun algoritma...', subject: 'Informatika', class: '8', difficulty: 'Mudah', status: 'ACTIVE', featured: true, thumbnail_url: 'https://placehold.co/100x100/1E293B/6366F1?text=FA' },
+                    { id: 'GM002', title: 'AI Prompt Challenge', description: 'Uji kemampuan prompt AI...', subject: 'AI', class: '9', difficulty: 'Sedang', status: 'ACTIVE', featured: true, thumbnail_url: 'https://placehold.co/100x100/1E293B/06B6D4?text=AI' },
+                ];
+            } else {
+                try {
+                    const res = await fetch(`${CONFIG.API_URL}?action=getGames`);
+                    const data = await res.json();
+                    if(data.success) adminGames = data.data;
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+            renderAdminTable();
+        }
+
+        function renderAdminTable() {
+            document.getElementById('adminTotalGames').textContent = adminGames.length;
+            const tbody = document.getElementById('adminGameTableBody');
+            
+            if(adminGames.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-400">Belum ada data game.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = adminGames.map(game => `
+                <tr class="hover:bg-white/5 transition-colors">
+                    <td class="p-4 flex items-center gap-3">
+                        <img src="${game.thumbnail_url}" onerror="this.src='https://placehold.co/100x100/1E293B/94A3B8?text=Img'" class="w-10 h-10 rounded-lg object-cover">
+                        <div>
+                            <div class="font-bold text-white">${game.title}</div>
+                            <div class="text-[10px] text-gray-400">${game.id}</div>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-xs text-white">${game.subject}</div>
+                        <div class="text-[10px] text-gray-400">Kelas ${game.class}</div>
+                    </td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-white/5 text-gray-300 border border-white/5">${game.difficulty}</span></td>
+                    <td class="p-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${game.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">${game.status || 'ACTIVE'}</span></td>
+                    <td class="p-4">${game.featured ? '<i class="fa-solid fa-check text-boash-success"></i>' : '<span class="text-gray-600">-</span>'}</td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="editGame('${game.id}')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-boash-accent text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteGame('${game.id}')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-500 text-gray-300 hover:text-white transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddGameModal() {
+            document.getElementById('modalFormTitle').textContent = "Tambah Game Baru";
+            document.getElementById('gameForm').reset();
+            document.getElementById('formGameId').value = "";
+            document.getElementById('gameFormModal').classList.remove('hidden');
+            document.getElementById('gameFormModal').classList.add('flex');
+        }
+
+        function closeGameFormModal() {
+            document.getElementById('gameFormModal').classList.add('hidden');
+            document.getElementById('gameFormModal').classList.remove('flex');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const payload = {
+                id: document.getElementById('formGameId').value,
+                title: document.getElementById('formTitle').value,
+                description: document.getElementById('formDesc').value,
+                thumbnail_url: document.getElementById('formThumbnail').value,
+                game_url: document.getElementById('formGameUrl').value,
+                subject: document.getElementById('formSubject').value,
+                class: document.getElementById('formClass').value,
+                difficulty: document.getElementById('formDifficulty').value,
+                status: document.getElementById('formStatus').value,
+                featured: document.getElementById('formFeatured').checked
+            };
+
+            if(CONFIG.USE_MOCK_DATA || !CONFIG.API_URL) {
+                if(!payload.id) {
+                    payload.id = 'GM' + Math.floor(100 + Math.random() * 900);
+                    adminGames.push(payload);
+                } else {
+                    const idx = adminGames.findIndex(g => g.id === payload.id);
+                    if(idx > -1) adminGames[idx] = payload;
+                }
+                alert("Berhasil disimpan (Mode Mock)");
+                closeGameFormModal();
+                renderAdminTable();
+                return;
+            }
+
+            // Real backend request
+            const action = payload.id ? 'updateGame' : 'addGame';
+            try {
+                const res = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, data: payload })
+                });
+                const d = await res.json();
+                if(d.success) {
+                    alert("Berhasil disimpan ke Spreadsheet!");
+                    closeGameFormModal();
+                    initAdmin();
+                } else {
+                    alert("Gagal: " + d.message);
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Terjadi kesalahan jaringan.");
+            }
+        }
+
+        function editGame(id) {
+            const game = adminGames.find(g => g.id === id);
+            if(!game) return;
+            
+            document.getElementById('modalFormTitle').textContent = "Edit Game";
+            document.getElementById('formGameId').value = game.id;
+            document.getElementById('formTitle').value = game.title;
+            document.getElementById('formDesc').value = game.description;
+            document.getElementById('formThumbnail').value = game.thumbnail_url;
+            document.getElementById('formGameUrl').value = game.game_url;
+            document.getElementById('formSubject').value = game.subject;
+            document.getElementById('formClass').value = game.class;
+            document.getElementById('formDifficulty').value = game.difficulty;
+            document.getElementById('formStatus').value = game.status || 'ACTIVE';
+            document.getElementById('formFeatured').checked = game.featured;
+
+            document.getElementById('gameFormModal').classList.remove('hidden');
+            document.getElementById('gameFormModal').classList.add('flex');
+        }
+
+        async function deleteGame(id) {
+            if(!confirm("Yakin ingin menghapus game ini?")) return;
+
+            if(CONFIG.USE_MOCK_DATA || !CONFIG.API_URL) {
+                adminGames = adminGames.filter(g => g.id !== id);
+                renderAdminTable();
+                return;
+            }
+
+            try {
+                const res = await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'deleteGame', data: { id: id } })
+                });
+                const d = await res.json();
+                if(d.success) initAdmin();
+                else alert("Gagal menghapus.");
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdmin);
+    </script>
+</body>
+</html>
